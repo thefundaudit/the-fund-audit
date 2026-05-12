@@ -184,12 +184,16 @@ st.markdown("""
         color: #000000 !important;
     }
     .stSelectbox, .stSelectbox > div, .stSelectbox div[data-testid="stSelectbox"], .stSelectbox select, .stSelectbox div[role="button"], .stSelectbox div[role="textbox"], .stSelectbox span, .stSelectbox input, .stSelectbox button, .stSelectbox [data-baseweb="select"],
-    div[data-testid="stSelectbox"], div[data-testid="stSelectbox"] *, div[role="combobox"], div[role="listbox"], div[role="option"], select, option, input, button {
+    div[data-testid="stSelectbox"], div[data-testid="stSelectbox"] *, div[role="combobox"], div[role="listbox"], div[role="option"], select, option, input, button,
+    .stSelectbox ul, .stSelectbox li, .stSelectbox li *, .stSelectbox [data-baseweb="listbox"], .stSelectbox [data-baseweb="option"], .stSelectbox [class*="list"], .stSelectbox [class*="option"], .stSelectbox [class*="menu"] {
         background-color: #ffffff !important;
         color: #000000 !important;
     }
     .stSelectbox option, .stSelectbox option:hover, .stSelectbox option:focus,
-    div[data-testid="stSelectbox"] div[role="option"] {
+    div[data-testid="stSelectbox"] div[role="option"],
+    .stSelectbox li,
+    .stSelectbox li *,
+    .stSelectbox [data-baseweb="option"] {
         background-color: #ffffff !important;
         color: #000000 !important;
     }
@@ -436,6 +440,9 @@ if button_clicked:
             - Use plain numbers for weights, overlap, and NAV values.
             - Do not include any percentage signs (%) or currency symbols.
             - Use double quotes for all JSON strings.
+            - Do not use unescaped newlines inside any JSON string value.
+            - Escape internal double quotes inside strings as \".
+            - Keep all string values on a single line.
             
             Format the response strictly as a JSON object with this structure:
             {{
@@ -489,6 +496,8 @@ if button_clicked:
                     fallback_response = re.sub(r'(?<=\d),(?=\d)', '', fallback_response)
                     fallback_response = re.sub(r',\s*}', '}', fallback_response)
                     fallback_response = re.sub(r',\s*]', ']', fallback_response)
+                    fallback_response = fallback_response.replace('\n', '\\n').replace('\r', '')
+                    fallback_response = re.sub(r'(?<!\\)"', '\\\"', fallback_response)
                     data = json.loads(fallback_response)
 
                 # --- Display Results ---
