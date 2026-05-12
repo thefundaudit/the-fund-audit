@@ -1,0 +1,21 @@
+# --- Python Virtual Environment ---
+venv/
+env/
+ENV/
+.env
+
+# --- Streamlit Secrets (Crucial) ---
+.streamlit/
+
+# --- Python Cache ---
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# --- OS Specific Files ---
+.DS_Store
+Thumbs.db
+
+# --- Development Databases/Logs ---
+*.log
+*.sqlite
