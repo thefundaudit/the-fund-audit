@@ -198,23 +198,29 @@ st.markdown("""
         color: #000000 !important;
     }
     div[role="combobox"], div[role="listbox"], div[role="option"], div[role="presentation"],
+    div[role="presentation"] *, div[role="presentation"] div[role="listbox"], div[role="presentation"] div[role="option"],
+    div[role="presentation"] ul, div[role="presentation"] li,
     [data-testid="stSelectbox"], [data-testid="stSelectbox"] *,
     .stSelectbox, .stSelectbox *,
-    [class*="select"], [class*="option"], [class*="list"], [class*="menu"] {
+    [class*="select"], [class*="option"], [class*="list"], [class*="menu"],
+    ul, ul *, li, li * {
         background-color: #ffffff !important;
         color: #000000 !important;
         border-color: #dddddd !important;
+        box-shadow: none !important;
     }
-    div[role="listbox"] {
+    div[role="listbox"], div[role="presentation"] div[role="listbox"], div[role="presentation"] ul {
         background-color: #ffffff !important;
         color: #000000 !important;
         border: 1px solid #dddddd !important;
+        box-shadow: none !important;
     }
-    div[role="option"], .stSelectbox [data-baseweb="option"], .stSelectbox li, .stSelectbox li * {
+    div[role="option"], div[role="presentation"] div[role="option"], .stSelectbox [data-baseweb="option"], .stSelectbox li, .stSelectbox li * {
         background-color: #ffffff !important;
         color: #000000 !important;
     }
     div[role="option"]:hover, div[role="option"][aria-selected="true"],
+    div[role="presentation"] div[role="option"]:hover, div[role="presentation"] div[role="option"][aria-selected="true"],
     .stSelectbox li:hover, .stSelectbox li:focus,
     [data-baseweb="option"]:hover, [data-baseweb="option"][aria-selected="true"] {
         background-color: #f7f7f7 !important;
