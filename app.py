@@ -249,35 +249,35 @@ def render_html_table(df):
     if df.empty:
         return
 
-    html = df.to_html(index=False, classes="custom-white-table", border=0)
+    html = df.to_html(index=False, classes="custom-white-table", border=0, escape=False)
     st.markdown(
-        """
+        f"""
         <style>
-        table.custom-white-table {
+        table.custom-white-table {{
             width: 100% !important;
             border-collapse: collapse !important;
             background: #ffffff !important;
             color: #000000 !important;
             margin-bottom: 1rem !important;
-        }
+        }}
         table.custom-white-table th,
-        table.custom-white-table td {
+        table.custom-white-table td {{
             border: 1px solid #dddddd !important;
             padding: 10px 12px !important;
             background: #ffffff !important;
             color: #000000 !important;
             text-align: left !important;
-        }
-        table.custom-white-table th {
+        }}
+        table.custom-white-table th {{
             background: #f8f8f8 !important;
             color: #111111 !important;
-        }
-        table.custom-white-table tr:nth-child(even) td {
+        }}
+        table.custom-white-table tr:nth-child(even) td {{
             background: #fbfbfb !important;
-        }
+        }}
         </style>
-        """
-        + html,
+        {html}
+        """,
         unsafe_allow_html=True,
     )
 
