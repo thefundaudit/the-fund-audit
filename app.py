@@ -1,4 +1,5 @@
 import os
+import re
 import time
 from dotenv import load_dotenv
 import streamlit as st
@@ -37,6 +38,32 @@ AMFI_LOCAL_FILE = Path(__file__).parent / "amfi_nav_data.txt"
 
 def show_error_message(msg):
     st.error(f"{msg} Something went wrong. Contact thefundaudit.mail@gmail.com")
+
+
+def extract_json_object(text):
+    start = text.find('{')
+    if start == -1:
+        return None
+
+    depth = 0
+    escaped = False
+    in_string = False
+    for i, ch in enumerate(text[start:], start):
+        if ch == '\\' and not escaped:
+            escaped = True
+            continue
+        if ch == '"' and not escaped:
+            in_string = not in_string
+        escaped = False
+
+        if not in_string:
+            if ch == '{':
+                depth += 1
+            elif ch == '}':
+                depth -= 1
+                if depth == 0:
+                    return text[start:i + 1]
+    return None
 
 
 def parse_amfi_nav_text(text):
@@ -156,21 +183,13 @@ st.markdown("""
     body, .stApp, .main, .stText, .stMarkdown, p, h1, h2, h3, h4, h5, h6, span, div, .stSelectbox, .stTextInput {
         color: #000000 !important;
     }
-    .stSelectbox, .stSelectbox > div, .stSelectbox div[data-testid="stSelectbox"], .stSelectbox select, .stSelectbox div[role="button"], .stSelectbox div[role="textbox"], .stSelectbox span, .stSelectbox input, .stSelectbox button, .stSelectbox [data-baseweb="select"] {
+    .stSelectbox, .stSelectbox > div, .stSelectbox div[data-testid="stSelectbox"], .stSelectbox select, .stSelectbox div[role="button"], .stSelectbox div[role="textbox"], .stSelectbox span, .stSelectbox input, .stSelectbox button, .stSelectbox [data-baseweb="select"],
+    div[data-testid="stSelectbox"], div[data-testid="stSelectbox"] *, div[role="combobox"], div[role="listbox"], div[role="option"], select, option, input, button {
         background-color: #ffffff !important;
         color: #000000 !important;
     }
-    .stSelectbox option, .stSelectbox option:hover, .stSelectbox option:focus {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-    }
-    div[data-testid="stSelectbox"] div[role="button"],
-    div[data-testid="stSelectbox"] div[role="listbox"],
+    .stSelectbox option, .stSelectbox option:hover, .stSelectbox option:focus,
     div[data-testid="stSelectbox"] div[role="option"] {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-    }
-    select, option, input, button {
         background-color: #ffffff !important;
         color: #000000 !important;
     }
@@ -414,17 +433,20 @@ if button_clicked:
             - Clearly states this is for educational purposes only
             
             CRITICAL: Your response must be ONLY a valid JSON object. Do not include any text before or after the JSON. Do not use markdown formatting. Do not add explanations or comments.
+            - Use plain numbers for weights, overlap, and NAV values.
+            - Do not include any percentage signs (%) or currency symbols.
+            - Use double quotes for all JSON strings.
             
             Format the response strictly as a JSON object with this structure:
             {{
                 "fund_a_name": "actual name",
                 "fund_b_name": "actual name",
-                "fund_a_holdings": {{"Stock Name": weight, ...}},
-                "fund_b_holdings": {{"Stock Name": weight, ...}},
-                "overlap_percentage": value,
+                "fund_a_holdings": {{"Stock Name": 0.0, ...}},
+                "fund_b_holdings": {{"Stock Name": 0.0, ...}},
+                "overlap_percentage": 0.0,
                 "common_stocks": ["Stock A", "Stock B", ...],
-                "fund_a_nav": current_nav_price,
-                "fund_b_nav": current_nav_price,
+                "fund_a_nav": 0.0,
+                "fund_b_nav": 0.0,
                 "insight": "A brief 2-sentence educational analysis focusing on overlap and diversification, with no investment recommendations"
             }}
             Return ONLY the JSON object, without any surrounding markdown, code fences, explanation, or extra text.
@@ -456,13 +478,18 @@ if button_clicked:
                 
                 clean_response = clean_response.strip()
                 
-                # Try to find JSON object if there's extra text
-                import re
-                json_match = re.search(r'\{.*\}', clean_response, re.DOTALL)
-                if json_match:
-                    clean_response = json_match.group(0)
+                clean_response = extract_json_object(clean_response) or clean_response
                 
-                data = json.loads(clean_response)
+                try:
+                    data = json.loads(clean_response)
+                except json.JSONDecodeError:
+                    fallback_response = clean_response.replace("'", '"')
+                    fallback_response = fallback_response.replace('₹', '')
+                    fallback_response = fallback_response.replace('%', '')
+                    fallback_response = re.sub(r'(?<=\d),(?=\d)', '', fallback_response)
+                    fallback_response = re.sub(r',\s*}', '}', fallback_response)
+                    fallback_response = re.sub(r',\s*]', ']', fallback_response)
+                    data = json.loads(fallback_response)
 
                 # --- Display Results ---
                 overlap = data.get('overlap_percentage', 0)
