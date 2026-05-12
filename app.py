@@ -35,6 +35,10 @@ AMFI_NAV_URL = "https://www.amfiindia.com/spages/NAVAll.txt"
 AMFI_LOCAL_FILE = Path(__file__).parent / "amfi_nav_data.txt"
 
 
+def show_error_message(msg):
+    st.error(f"{msg} Something went wrong. Contact thefundaudit.mail@gmail.com")
+
+
 def parse_amfi_nav_text(text):
     nav_data = {}
     scheme_names = []
@@ -92,7 +96,6 @@ def load_amfi_nav_data():
             text = response.text
             try:
                 AMFI_LOCAL_FILE.write_text(text, encoding="utf-8")
-                st.success("✓ Downloaded fresh AMFI NAV data")
             except Exception:
                 st.warning("Downloaded AMFI NAV data but could not save locally.")
         except Exception as e:
@@ -100,13 +103,13 @@ def load_amfi_nav_data():
                 st.warning(f"Could not download latest AMFI NAV data: {e}. Using cached local copy.")
                 text = AMFI_LOCAL_FILE.read_text("utf-8")
             else:
-                st.error(f"Could not load AMFI NAV data: {e}")
+                show_error_message(f"Could not load AMFI NAV data: {e}")
                 return nav_data, scheme_names
 
     try:
         nav_data, scheme_names = parse_amfi_nav_text(text)
     except Exception as e:
-        st.error(f"Error parsing AMFI data: {e}")
+        show_error_message(f"Error parsing AMFI data: {e}")
 
     return nav_data, scheme_names
 
@@ -143,8 +146,12 @@ else:
 # Custom CSS for a cleaner "FinTech" look
 st.markdown("""
     <style>
+    :root, body, .stApp, .main, .css-18e3th9, .css-12oz5g7, .css-1d391kg, .css-1offfwp, .css-1lcbmhc {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
     .main {
-        background-color: #ffffff;
+        background-color: #ffffff !important;
     }
     body, .stApp, .main, .stText, .stMarkdown, p, h1, h2, h3, h4, h5, h6, span, div, .stSelectbox, .stTextInput {
         color: #000000 !important;
@@ -590,9 +597,9 @@ if button_clicked:
                 
             except Exception as e:
                 if isinstance(e, json.JSONDecodeError):
-                    st.error("AI returned invalid JSON. Please try again or verify the fund names.")
+                    show_error_message("AI returned invalid JSON. Please try again or verify the fund names.")
                 else:
-                    st.error("Error retrieving data. Please ensure the fund names are accurate and try again.")
+                    show_error_message("Error retrieving data. Please ensure the fund names are accurate and try again.")
 
                 if DEBUG_MODE:
                     st.markdown("**Debug output:**")
