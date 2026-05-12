@@ -222,6 +222,29 @@ def load_amfi_nav_data():
     return nav_data, scheme_names
 
 
+def style_plotly_fig(fig):
+    fig.update_layout(
+        paper_bgcolor="#ffffff",
+        plot_bgcolor="#ffffff",
+        font_color="#000000",
+        title_font_color="#000000",
+        legend=dict(font_color="#000000"),
+        xaxis=dict(
+            title_font_color="#000000",
+            tickfont_color="#000000",
+            gridcolor="#e8e8e8",
+            zerolinecolor="#e8e8e8",
+        ),
+        yaxis=dict(
+            title_font_color="#000000",
+            tickfont_color="#000000",
+            gridcolor="#e8e8e8",
+            zerolinecolor="#e8e8e8",
+        ),
+    )
+    return fig
+
+
 @st.cache_data(ttl=86400)
 def get_nav_from_local_data(fund_name, nav_data):
     if not fund_name or not nav_data:
@@ -307,29 +330,33 @@ st.markdown("""
         background-color: #f7f7f7 !important;
         color: #000000 !important;
     }
-    .stDataFrame, .stDataFrame div, .stDataFrame table, .stDataFrame th, .stDataFrame td,
-    div[data-testid="stDataFrame"], div[data-testid="stDataFrame"] *,
-    .streamlit-expanderHeader, .streamlit-expanderHeader * {
+    div[data-testid="stDataFrame"] table, div[data-testid="stDataFrame"] thead, div[data-testid="stDataFrame"] tbody,
+    div[data-testid="stDataFrame"] tr, div[data-testid="stDataFrame"] th, div[data-testid="stDataFrame"] td,
+    div[data-testid="stDataFrame"] th div, div[data-testid="stDataFrame"] td div,
+    div[data-testid="stDataFrame"] th span, div[data-testid="stDataFrame"] td span {
         background-color: #ffffff !important;
         color: #000000 !important;
         border-color: #dddddd !important;
     }
-    .stDataFrame table {
+    div[data-testid="stDataFrame"] th, div[data-testid="stDataFrame"] td {
+        border: 1px solid #dddddd !important;
+    }
+    div[data-testid="stDataFrame"] td div,
+    div[data-testid="stDataFrame"] th div {
+        color: #000000 !important;
         background-color: #ffffff !important;
     }
-    .stPlotlyChart, .stPlotlyChart div, .stPlotlyChart svg,
-    .js-plotly-plot, .plotly, .plotly .main-svg,
-    .plotly .bg, .plotly .xaxis, .plotly .yaxis,
-    .plotly .cartesianlayer, .plotly .legend,
-    .plotly .infolayer, .plotly .plotly .main-svg {
+    .stPlotlyChart .plotly-graph-div, .stPlotlyChart .plotly-graph-div svg, .stPlotlyChart .js-plotly-plot,
+    .stPlotlyChart .plotly-graph-div .main-svg, .stPlotlyChart .plotly-graph-div .main-svg text,
+    .stPlotlyChart .plotly-graph-div .main-svg g, .stPlotlyChart .plotly-graph-div .main-svg .legend,
+    .stPlotlyChart .plotly-graph-div .main-svg .xtick, .stPlotlyChart .plotly-graph-div .main-svg .ytick,
+    .stPlotlyChart .plotly-graph-div .main-svg .axis {
         background-color: #ffffff !important;
-    }
-    .stPlotlyChart .plotly-graph-div, .stPlotlyChart .plotly-graph-div svg,
-    .stPlotlyChart .js-plotly-plot {
-        background: #ffffff !important;
+        color: #000000 !important;
+        fill: #000000 !important;
     }
     .stPlotlyChart .plotly-graph-div .main-svg {
-        fill: #ffffff !important;
+        background-color: transparent !important;
     }
     .metric-card {
         border-radius: 24px;
@@ -721,6 +748,7 @@ if button_clicked:
                         if not df_a.empty:
                             st.dataframe(df_a, use_container_width=True)
                             fig_a = px.pie(df_a.head(10), values='Weight', names='Stock', title=f"Top 10 Holdings: {fund_a_name}", hole=0.4)
+                            fig_a = style_plotly_fig(fig_a)
                             st.plotly_chart(fig_a, use_container_width=True)
                         else:
                             st.info("No holdings data available for Fund A.")
@@ -733,6 +761,7 @@ if button_clicked:
                         if not df_b.empty:
                             st.dataframe(df_b, use_container_width=True)
                             fig_b = px.pie(df_b.head(10), values='Weight', names='Stock', title=f"Top 10 Holdings: {fund_b_name}", hole=0.4)
+                            fig_b = style_plotly_fig(fig_b)
                             st.plotly_chart(fig_b, use_container_width=True)
                         else:
                             st.info("No holdings data available for Fund B.")
@@ -743,6 +772,7 @@ if button_clicked:
                     if common_count:
                         st.write(f"**Shared stocks found:** {common_count}")
                         overlap_bar = px.bar(common_df.head(10), x='Stock', y='OverlapWeight', title='Top Shared Stock Overlap Weights')
+                        overlap_bar = style_plotly_fig(overlap_bar)
                         st.plotly_chart(overlap_bar, use_container_width=True)
                         overlap_table = common_df[['Stock', 'Weight_A', 'Weight_B', 'OverlapWeight']].rename(
                             columns={
