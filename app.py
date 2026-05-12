@@ -197,6 +197,29 @@ st.markdown("""
         background-color: #ffffff !important;
         color: #000000 !important;
     }
+    div[role="combobox"], div[role="listbox"], div[role="option"], div[role="presentation"],
+    [data-testid="stSelectbox"], [data-testid="stSelectbox"] *,
+    .stSelectbox, .stSelectbox *,
+    [class*="select"], [class*="option"], [class*="list"], [class*="menu"] {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border-color: #dddddd !important;
+    }
+    div[role="listbox"] {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border: 1px solid #dddddd !important;
+    }
+    div[role="option"], .stSelectbox [data-baseweb="option"], .stSelectbox li, .stSelectbox li * {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+    div[role="option"]:hover, div[role="option"][aria-selected="true"],
+    .stSelectbox li:hover, .stSelectbox li:focus,
+    [data-baseweb="option"]:hover, [data-baseweb="option"][aria-selected="true"] {
+        background-color: #f7f7f7 !important;
+        color: #000000 !important;
+    }
     .metric-card {
         border-radius: 24px;
         padding: 22px 24px;
