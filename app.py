@@ -307,6 +307,30 @@ st.markdown("""
         background-color: #f7f7f7 !important;
         color: #000000 !important;
     }
+    .stDataFrame, .stDataFrame div, .stDataFrame table, .stDataFrame th, .stDataFrame td,
+    div[data-testid="stDataFrame"], div[data-testid="stDataFrame"] *,
+    .streamlit-expanderHeader, .streamlit-expanderHeader * {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border-color: #dddddd !important;
+    }
+    .stDataFrame table {
+        background-color: #ffffff !important;
+    }
+    .stPlotlyChart, .stPlotlyChart div, .stPlotlyChart svg,
+    .js-plotly-plot, .plotly, .plotly .main-svg,
+    .plotly .bg, .plotly .xaxis, .plotly .yaxis,
+    .plotly .cartesianlayer, .plotly .legend,
+    .plotly .infolayer, .plotly .plotly .main-svg {
+        background-color: #ffffff !important;
+    }
+    .stPlotlyChart .plotly-graph-div, .stPlotlyChart .plotly-graph-div svg,
+    .stPlotlyChart .js-plotly-plot {
+        background: #ffffff !important;
+    }
+    .stPlotlyChart .plotly-graph-div .main-svg {
+        fill: #ffffff !important;
+    }
     .metric-card {
         border-radius: 24px;
         padding: 22px 24px;
