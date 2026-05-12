@@ -245,6 +245,43 @@ def style_plotly_fig(fig):
     return fig
 
 
+def render_html_table(df):
+    if df.empty:
+        return
+
+    html = df.to_html(index=False, classes="custom-white-table", border=0)
+    st.markdown(
+        """
+        <style>
+        table.custom-white-table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            margin-bottom: 1rem !important;
+        }
+        table.custom-white-table th,
+        table.custom-white-table td {
+            border: 1px solid #dddddd !important;
+            padding: 10px 12px !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            text-align: left !important;
+        }
+        table.custom-white-table th {
+            background: #f8f8f8 !important;
+            color: #111111 !important;
+        }
+        table.custom-white-table tr:nth-child(even) td {
+            background: #fbfbfb !important;
+        }
+        </style>
+        """
+        + html,
+        unsafe_allow_html=True,
+    )
+
+
 @st.cache_data(ttl=86400)
 def get_nav_from_local_data(fund_name, nav_data):
     if not fund_name or not nav_data:
@@ -746,7 +783,7 @@ if button_clicked:
                             unsafe_allow_html=True
                         )
                         if not df_a.empty:
-                            st.dataframe(df_a, use_container_width=True)
+                            render_html_table(df_a)
                             fig_a = px.pie(df_a.head(10), values='Weight', names='Stock', title=f"Top 10 Holdings: {fund_a_name}", hole=0.4)
                             fig_a = style_plotly_fig(fig_a)
                             st.plotly_chart(fig_a, use_container_width=True)
@@ -759,7 +796,7 @@ if button_clicked:
                             unsafe_allow_html=True
                         )
                         if not df_b.empty:
-                            st.dataframe(df_b, use_container_width=True)
+                            render_html_table(df_b)
                             fig_b = px.pie(df_b.head(10), values='Weight', names='Stock', title=f"Top 10 Holdings: {fund_b_name}", hole=0.4)
                             fig_b = style_plotly_fig(fig_b)
                             st.plotly_chart(fig_b, use_container_width=True)
@@ -781,7 +818,7 @@ if button_clicked:
                                 'OverlapWeight': 'Overlap Weight'
                             }
                         )
-                        st.dataframe(overlap_table, use_container_width=True)
+                        render_html_table(overlap_table)
                     else:
                         st.info("No common stock holdings were detected between the selected funds.")
 
