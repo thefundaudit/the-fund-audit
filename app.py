@@ -66,6 +66,87 @@ def extract_json_object(text):
     return None
 
 
+def sanitize_json_text(text):
+    if not text:
+        return text
+
+    text = text.strip()
+    text = text.replace('\r\n', '\n').replace('\r', '\n')
+    text = re.sub(r'^```json\s*|^```\s*|\s*```$', '', text, flags=re.IGNORECASE).strip()
+    text = text.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
+    text = text.replace('\u2013', '-').replace('\u2014', '-')
+    extracted = extract_json_object(text)
+    if extracted:
+        text = extracted
+    text = re.sub(r',\s*(?=[\]}])', '', text)
+    if '"' not in text and "'" in text:
+        text = text.replace("'", '"')
+    return text
+
+
+def close_open_brackets(text):
+    stack = []
+    escaped = False
+    in_string = False
+
+    for ch in text:
+        if ch == '\\' and not escaped:
+            escaped = True
+            continue
+        if ch == '"' and not escaped:
+            in_string = not in_string
+        if not in_string:
+            if ch in ('{', '['):
+                stack.append(ch)
+            elif ch == '}' and stack and stack[-1] == '{':
+                stack.pop()
+            elif ch == ']' and stack and stack[-1] == '[':
+                stack.pop()
+        escaped = False
+
+    while stack:
+        opening = stack.pop()
+        text += '}' if opening == '{' else ']'
+    return text
+
+
+def repair_truncated_json(text):
+    if not text:
+        return text
+
+    text = text.strip()
+    text = re.sub(r'\s+$', '', text)
+    depth = 0
+    escaped = False
+    in_string = False
+    comma_positions = []
+
+    for i, ch in enumerate(text):
+        if ch == '\\' and not escaped:
+            escaped = True
+            continue
+        if ch == '"' and not escaped:
+            in_string = not in_string
+        if not in_string:
+            if ch in ('{', '['):
+                depth += 1
+            elif ch in ('}', ']'):
+                depth -= 1
+            elif ch == ',':
+                comma_positions.append((i, depth))
+        escaped = False
+
+    if comma_positions:
+        # Trim the last incomplete entry from the end of the JSON string
+        last_comma_index, _ = comma_positions[-1]
+        candidate = text[:last_comma_index].rstrip()
+        candidate = re.sub(r',\s*$', '', candidate)
+        candidate = close_open_brackets(candidate)
+        return candidate
+
+    return close_open_brackets(text)
+
+
 def parse_amfi_nav_text(text):
     nav_data = {}
     scheme_names = []
@@ -496,38 +577,29 @@ if button_clicked:
                     generation_config=genai.types.GenerationConfig(
                         temperature=0.1,
                         top_p=0.8,
-                        max_output_tokens=2048,
+                        max_output_tokens=4096,
                     )
                 )
                 raw_response = getattr(response, "text", str(response))
-                
-                # More robust JSON extraction
-                clean_response = raw_response.strip()
-                
-                # Remove markdown code blocks if present
-                if clean_response.startswith("```json"):
-                    clean_response = clean_response[7:]
-                if clean_response.startswith("```"):
-                    clean_response = clean_response[3:]
-                if clean_response.endswith("```"):
-                    clean_response = clean_response[:-3]
-                
-                clean_response = clean_response.strip()
-                
-                clean_response = extract_json_object(clean_response) or clean_response
-                
+                clean_response = sanitize_json_text(raw_response)
+
                 try:
                     data = json.loads(clean_response)
                 except json.JSONDecodeError:
-                    fallback_response = clean_response.replace("'", '"')
-                    fallback_response = fallback_response.replace('₹', '')
-                    fallback_response = fallback_response.replace('%', '')
-                    fallback_response = re.sub(r'(?<=\d),(?=\d)', '', fallback_response)
-                    fallback_response = re.sub(r',\s*}', '}', fallback_response)
-                    fallback_response = re.sub(r',\s*]', ']', fallback_response)
-                    fallback_response = fallback_response.replace('\n', '\\n').replace('\r', '')
-                    fallback_response = re.sub(r'(?<!\\)"', '\\\"', fallback_response)
-                    data = json.loads(fallback_response)
+                    repaired = repair_truncated_json(clean_response)
+                    try:
+                        data = json.loads(repaired)
+                    except json.JSONDecodeError:
+                        try:
+                            data, _ = json.JSONDecoder().raw_decode(repaired)
+                        except json.JSONDecodeError:
+                            fallback_response = sanitize_json_text(repaired)
+                            fallback_response = fallback_response.replace('₹', '')
+                            fallback_response = fallback_response.replace('%', '')
+                            fallback_response = re.sub(r',\s*(?=[\]}])', '', fallback_response)
+                            if '"' not in fallback_response and "'" in fallback_response:
+                                fallback_response = fallback_response.replace("'", '"')
+                            data = json.loads(fallback_response)
 
                 # --- Display Results ---
                 overlap = data.get('overlap_percentage', 0)
