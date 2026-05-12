@@ -250,36 +250,36 @@ def render_html_table(df):
         return
 
     html = df.to_html(index=False, classes="custom-white-table", border=0, escape=False)
-    st.markdown(
-        f"""
-        <style>
-        table.custom-white-table {{
-            width: 100% !important;
-            border-collapse: collapse !important;
-            background: #ffffff !important;
-            color: #000000 !important;
-            margin-bottom: 1rem !important;
-        }}
-        table.custom-white-table th,
-        table.custom-white-table td {{
-            border: 1px solid #dddddd !important;
-            padding: 10px 12px !important;
-            background: #ffffff !important;
-            color: #000000 !important;
-            text-align: left !important;
-        }}
-        table.custom-white-table th {{
-            background: #f8f8f8 !important;
-            color: #111111 !important;
-        }}
-        table.custom-white-table tr:nth-child(even) td {{
-            background: #fbfbfb !important;
-        }}
-        </style>
-        {html}
-        """,
-        unsafe_allow_html=True,
-    )
+    full_html = f"""
+    <style>
+    table.custom-white-table {{
+        width: 100% !important;
+        border-collapse: collapse !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        margin-bottom: 1rem !important;
+    }}
+    table.custom-white-table th,
+    table.custom-white-table td {{
+        border: 1px solid #dddddd !important;
+        padding: 10px 12px !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        text-align: left !important;
+    }}
+    table.custom-white-table th {{
+        background: #f8f8f8 !important;
+        color: #111111 !important;
+    }}
+    table.custom-white-table tr:nth-child(even) td {{
+        background: #fbfbfb !important;
+    }}
+    </style>
+    {html}
+    """
+
+    import streamlit.components.v1 as components
+    components.html(full_html, height=400, scrolling=True)
 
 
 @st.cache_data(ttl=86400)
