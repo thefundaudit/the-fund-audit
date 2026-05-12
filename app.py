@@ -156,6 +156,14 @@ st.markdown("""
     body, .stApp, .main, .stText, .stMarkdown, p, h1, h2, h3, h4, h5, h6, span, div, .stSelectbox, .stTextInput {
         color: #000000 !important;
     }
+    .stSelectbox, .stSelectbox > div, .stSelectbox div[data-testid="stSelectbox"], .stSelectbox select, .stSelectbox div[role="button"], .stSelectbox div[role="textbox"] {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+    .stSelectbox option, .stSelectbox option:hover, .stSelectbox option:focus {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
     .metric-card {
         border-radius: 24px;
         padding: 22px 24px;
